@@ -1,10 +1,11 @@
-from dataclasses import dataclass
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 import json
 import time
+from dataclasses import dataclass
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 # import winsound
 # frequency = 2500  # Set Frequency To 2500 Hertz
@@ -32,15 +33,13 @@ def find_prices(id: int, foil: bool):
     driver.get(fetch_url)
     WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CLASS_NAME, "listing-item")))
-    try:
-        title = driver.find_element(By.CLASS_NAME, "product-details__name").text
-    except Exception as e:
-        pass
     for item in driver.find_elements(By.CLASS_NAME, "listing-item"):
         price = item.find_element(By.CLASS_NAME, "listing-item__price").text.replace("$", "").replace(",", "")
         condition = item.find_element(By.CLASS_NAME, "listing-item__condition").text
-        return [title, float(price), condition]
-   def find_cheap_cards():
+        return [float(price), condition]
+
+
+def find_cheap_cards():
     cards: dict[str, Card] = {}
 
     with open("AllPrices.json") as file:
@@ -70,15 +69,20 @@ def find_prices(id: int, foil: bool):
 
     for card in cards.values():
         if card.cardkingdom_buylist_foil and card.cardkingdom_buylist_foil > 10:
-            title, price, condition = find_prices(card.tcgplayer_sku, True)
-            if price < card.cardkingdom_buylist_foil:
-                print(title, price, condition)
+            price, condition = find_prices(card.tcgplayer_sku, True)
+            buylist_price = card.cardkingdom_buylist_foil * .8 if "Lightly Played" in condition \
+                else card.cardkingdom_buylist_foil
+            if price * 1.1 < (buylist_price- 10):
+                print(foil_url.format(card.tcgplayer_sku), price, card.cardkingdom_buylist_foil)
+            time.sleep(card.tcgplayer_sku % 20)
 
         if card.cardkingdom_buylist_normal and card.cardkingdom_buylist_normal > 10:
-            title, price, condition = find_prices(card.tcgplayer_sku, False)
-            if price < card.cardkingdom_buylist_normal:
-                print(title, price, condition)
-        time.sleep(card.tcgplayer_sku % 20)
+            price, condition = find_prices(card.tcgplayer_sku, False)
+            buylist_price = card.cardkingdom_buylist_normal * .8 if "Lightly Played" in condition \
+                else card.cardkingdom_buylist_normal
+            if price * 1.1 < (buylist_price - 10):
+                print(url.format(card.tcgplayer_sku), price, card.cardkingdom_buylist_normal)
+            time.sleep(card.tcgplayer_sku % 20)
 
 
 find_cheap_cards()
