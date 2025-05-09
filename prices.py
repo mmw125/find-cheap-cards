@@ -2,18 +2,8 @@ import json
 import time
 from dataclasses import dataclass
 
-import selenium.common.exceptions
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
+from prices.listing import find_prices
 
-# import winsound
-# frequency = 2500  # Set Frequency To 2500 Hertz
-# duration = 1000  # Set Duration To 1000 ms == 1 second
-# winsound.Beep(frequency, duration)
-
-driver = webdriver.Chrome()
 url = "https://www.tcgplayer.com/product/{item}?Printing=Normal&page=1&Language=English&Condition=Lightly+Played|Near+Mint"
 foil_url = "https://www.tcgplayer.com/product/{item}?Printing=Foil&page=1&Language=English&Condition=Lightly+Played|Near+Mint"
 
@@ -28,23 +18,10 @@ class Card:
     tcgplayer_sku: int = None
 
 
-def find_prices(id: int, foil: bool) -> {}:
-    fetch_url = foil_url.format(item=id) if foil else url.format(item=id)
-    driver.get(fetch_url)
-    try:
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "listing-item")))
-    except selenium.common.exceptions.TimeoutException as e:
-        return []
-    for item in driver.find_elements(By.CLASS_NAME, "listing-item"):
-        price = item.find_element(By.CLASS_NAME, "listing-item__price").text.replace("$", "").replace(",", "")
-        condition = item.find_element(By.CLASS_NAME, "listing-item__condition").text
-        return [float(price), condition]
-
-
 def find_cheap_cards():
     cards: dict[str, Card] = {}
 
+    print("opening prices file")
     with open("AllPrices.json") as file:
         prices = json.load(file)
         date = prices['meta']['date']

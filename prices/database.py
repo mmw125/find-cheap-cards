@@ -23,3 +23,6 @@ class Database:
             with open(file) as f:
                 self.all_printings = json.load(f)
                 print("done loading " + file)
+
+if __name__ == "__main__":
+    Database().init()
