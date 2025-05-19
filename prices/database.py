@@ -2,6 +2,7 @@ import json
 import urllib.request
 import os.path
 
+database_folder = os.path.join(__path__, "../database")
 
 def _get_or_download_file(filename: str):
     if os.path.exists(filename):

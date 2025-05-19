@@ -1,8 +1,10 @@
+import asyncio
 import json
 import time
 from dataclasses import dataclass
-
+from typing import Generator
 from prices.listing import find_prices
+from prices.messenger import run_discord_client
 
 url = "https://www.tcgplayer.com/product/{item}?Printing=Normal&page=1&Language=English&Condition=Lightly+Played|Near+Mint"
 foil_url = "https://www.tcgplayer.com/product/{item}?Printing=Foil&page=1&Language=English&Condition=Lightly+Played|Near+Mint"
@@ -11,10 +13,10 @@ foil_url = "https://www.tcgplayer.com/product/{item}?Printing=Foil&page=1&Langua
 @dataclass
 class Card:
     uuid: str
-    tcgplayer_normal: float | None
-    tcgplayer_foil: float | None
-    cardkingdom_buylist_normal: float | None
-    cardkingdom_buylist_foil: float | None
+    tcgplayer_normal: float
+    tcgplayer_foil: float
+    cardkingdom_buylist_normal: float
+    cardkingdom_buylist_foil: float
     tcgplayer_sku: int = None
 
 
@@ -22,7 +24,7 @@ def find_cheap_cards():
     cards: dict[str, Card] = {}
 
     print("opening prices file")
-    with open("AllPrices.json") as file:
+    with open("AllPricesToday.json") as file:
         prices = json.load(file)
         date = prices['meta']['date']
         print("opened file")
@@ -41,7 +43,7 @@ def find_cheap_cards():
                         cards[uuid] = card
 
     print("opening skus")
-    with open("TcgplayerSkus.json") as file:
+    with open("database/TcgplayerSkus.json") as file:
         skus = json.load(file)
         for uuid, item in skus["data"].items():
             if uuid in cards:
@@ -69,5 +71,11 @@ def find_cheap_cards():
                     print(url.format(card.tcgplayer_sku), price, card.cardkingdom_buylist_normal)
                 time.sleep(card.tcgplayer_sku % 10 + 10)
 
+def card_id_generator() -> Generator[int, None, None]:
+    yield 4146
+    yield 4147
+    yield 4148
 
-find_cheap_cards()
+if __name__ == "__main__":
+    asyncio.run(run_discord_client(card_id_generator()))
+    # print(find_prices(4146, False))

@@ -14,7 +14,7 @@ AVG_DAILY_SOLD_CLASS_NAME = "sales-data__price"
 
 driver = webdriver.Firefox()
 
-def find_prices(card_id: int, foil: bool) -> {}:
+def find_prices(card_id: int, foil: bool) -> [float, str]:
     fetch_url = foil_url.format(item=card_id) if foil else url.format(item=card_id)
     driver.get(fetch_url)
     try:
@@ -40,6 +40,3 @@ def find_prices(card_id: int, foil: bool) -> {}:
                 return [float(price), condition]
             except selenium.common.exceptions.StaleElementReferenceException:
                 continue
-
-if __name__ == "__main__":
-    print(find_prices(4146, False))
